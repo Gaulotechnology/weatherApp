@@ -40,7 +40,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.MyViewHo
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView humidity, temperature, minTemp, maxTemp, dateView;
+        public TextView humidity, temperature, minTemp, maxTemp, dateView, locationAdd;
         private RelativeLayout relativeLayout;
         private ImageView buttonViewOption;
         private ImageView weather;
@@ -48,6 +48,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.MyViewHo
         public MyViewHolder(View view) {
             super(view);
             weather = view.findViewById(R.id.weather);
+            locationAdd = view.findViewById(R.id.locationAdd);
             humidity = (TextView) view.findViewById(R.id.humView);
             dateView= (TextView) view.findViewById(R.id.dateView);
             temperature = (TextView) view.findViewById(R.id.tempView);
@@ -93,19 +94,17 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.MyViewHo
         holder.temperature.setText(String.valueOf(weather.getTemperature()) + Weather.get_symbol(symbol_status));
         holder.maxTemp.setText(String.valueOf(weather.getMaxTemp()) + Weather.get_symbol(symbol_status));
         holder.minTemp.setText(String.valueOf(weather.getMinTemp()) + Weather.get_symbol(symbol_status));
-        holder.dateView.setText(java_date);
+        holder.dateView.setText(java_date + "\n " + description);
+        holder.locationAdd.setText(weather.getLocation());
         holder.weather.setImageResource(getIcon(description));
         Log.i("TAG", description);
 
         holder.relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 dated=weather.getDate();
-                Intent intent  = new Intent(context,MainActivity.class);
-                context.startActivity(intent);
-
-
+                //Intent intent  = new Intent(context,MainActivity.class);
+                //context.startActivity(intent);
                // Toast.makeText(view.getContext(),"click on item: "+ clients.getName(),Toast.LENGTH_LONG).show();
             }
         });

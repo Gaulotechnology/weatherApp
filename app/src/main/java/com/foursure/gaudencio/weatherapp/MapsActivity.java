@@ -1,5 +1,6 @@
 package com.foursure.gaudencio.weatherapp;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -45,13 +46,14 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
+
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -76,10 +78,10 @@ import static com.foursure.gaudencio.weatherapp.Weather.matric;
  * @author Gaudencio Solivatore
  */
 public class MapsActivity extends FragmentActivity implements Target, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,GoogleMap.InfoWindowAdapter
-        {
+        GoogleApiClient.OnConnectionFailedListener, GoogleMap.InfoWindowAdapter {
 
     private GoogleMap mMap;
+
     GoogleApiClient mGoogleApiClient;
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     private double currentLat;
@@ -91,11 +93,11 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
     private String maxTemp1;
     private Button menu;
     private LinearLayout menuc;
+    private String locationAddd = "";
     private SharedPreferences prefs;
     private int symbol_status;
+    private static final String TAG = "MapsActivity";
 
-
-            private static final String TAG = "MapsActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +132,7 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API).build();
 
+
     }
 
     @Override
@@ -144,27 +147,20 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
         mGoogleApiClient.disconnect();
         super.onStop();
     }
-    public String get_matric_ur(){
 
-        symbol_status= Integer.parseInt(prefs.getString("key_metric_value", "1"));
-         if(symbol_status==0){
-             return "";
+    public String get_matric_ur() {
 
-         }else{
-             return matric;
-         }
+        symbol_status = Integer.parseInt(prefs.getString("key_metric_value", "1"));
+        if (symbol_status == 0) {
+            return "";
+
+        } else {
+            return matric;
+        }
 
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -174,7 +170,7 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng loc) {
-                Log.e(TAG,"Clicked on map");
+                Log.e(TAG, "Clicked on map");
                 //LatLng loc = new LatLng(lat, lng);
                 currentLat = loc.latitude;
                 currentLon = loc.longitude;
@@ -182,20 +178,18 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
                 getWeatherData(loc);
                 //getForecast();
                 getDaily();
-
                 //BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.light_rain);
-
-                LatLng currentLocation = new LatLng(currentLat, currentLon);
+                centerMapOnMyLocation();
 
 
             }
         });
     }
 
-    
-    public  BitmapDescriptor getIcon(String condition){
+
+    public BitmapDescriptor getIcon(String condition) {
         BitmapDescriptor icon;
-        switch (condition){
+        switch (condition) {
             case "clear sky":
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.clear_sky);
                 break;
@@ -226,21 +220,18 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
             case "mist":
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.mist);
                 break;
-
-
             default:
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.light_rain);
                 break;
         }
 
 
-
-        return  icon;
+        return icon;
     }
 
 
-    public void getForecast(){
-        String url = "http://api.openweathermap.org/data/2.5/forecast?lat=" + Double.toString(currentLat) + get_matric_ur() + "&lon=" +  Double.toString(currentLon)+ "&APPID=ba6f50c8f8128fa2cce45dc13d58ed2c";
+    public void getForecast() {
+        String url = "http://api.openweathermap.org/data/2.5/forecast?lat=" + Double.toString(currentLat) + get_matric_ur() + "&lon=" + Double.toString(currentLon) + "&APPID=ba6f50c8f8128fa2cce45dc13d58ed2c";
         Log.e("TAG", url);
         StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
             @Override
@@ -260,18 +251,15 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
 
                         JSONObject fetch = weather.getJSONObject("main");
 
-                            temparature = fetch.getString("temp");
-                            humidity= fetch.getString("humidity");
-                            minTemp1=fetch.getString("temp_min");
-                            maxTemp1=fetch.getString("temp_max");
+                        temparature = fetch.getString("temp");
+                        humidity = fetch.getString("humidity");
+                        minTemp1 = fetch.getString("temp_min");
+                        maxTemp1 = fetch.getString("temp_max");
 
-                            Log.e("TAG", dt + ">>>>" + "Temp" + temparature +
-                                    "Humidity" + humidity
-                                    + "Min Temp" +  minTemp1 +
-                                    "Max Temp " + maxTemp1);
-
-
-
+                        Log.e("TAG", dt + ">>>>" + "Temp" + temparature +
+                                "Humidity" + humidity
+                                + "Min Temp" + minTemp1 +
+                                "Max Temp " + maxTemp1);
 
 
                     }
@@ -289,149 +277,156 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
         requestQueue.add(stringRequest);
     }
-    public void getDaily(){
-        String url = "http://api.openweathermap.org/data/2.5/onecall?lat=" + Double.toString(currentLat) + get_matric_ur() + "&exclude=hourly&lon=" +  Double.toString(currentLon)+ "&APPID=ba6f50c8f8128fa2cce45dc13d58ed2c";
+
+    public void getDaily() {
+        String url = "http://api.openweathermap.org/data/2.5/onecall?lat=" + Double.toString(currentLat) + get_matric_ur() + "&exclude=hourly&lon=" + Double.toString(currentLon) + "&APPID=ba6f50c8f8128fa2cce45dc13d58ed2c";
         Log.e("TAG", url);
         StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.e("TAG", response);
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONArray jsonArray = jsonObject.getJSONArray("daily");
+                    Log.e("TAG", jsonArray.toString());
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject weather = jsonArray.getJSONObject(i);
+                        String dt = weather.getString("dt");
+                        JSONObject temp = weather.getJSONObject("temp");
+                        temparature = temp.getString("day");
+                        humidity = weather.getString("humidity");
+                        minTemp1 = temp.getString("min");
+                        maxTemp1 = temp.getString("max");
+                        JSONArray jsonArray1 = weather.getJSONArray("weather");
+                        Log.e("TAG", jsonArray.toString());
+                        condition = "few clouds";
+                        for (int a = 0; a < jsonArray1.length(); a++) {
+                            JSONObject test = jsonArray1.getJSONObject(a);
+                            condition = test.getString("description");
+                            Log.i("TAG>>", test.getString("description"));
+                        }
+
+                        Log.e("TAG", dt + ">>>>" + "Temp" + temparature +
+                                "Humidity" + humidity
+                                + "Min Temp" + minTemp1 +
+                                "Max Temp " + maxTemp1);
+
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.i("TAG", "Exception" + e.getMessage() + ">>>>");
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("TAG", "Volley Error" + error.getMessage() + ">>>>");
+            }
+        });
+        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+        requestQueue.add(stringRequest);
+    }
+
+
+    public void getWeatherData(final LatLng loc) {
+
+        String server_url = "http://api.openweathermap.org/data/2.5/weather?lat=" + Double.toString(currentLat) + get_matric_ur() + "&lon=" + Double.toString(currentLon) + "&APPID=ba6f50c8f8128fa2cce45dc13d58ed2c";
+        Log.e("RegisterActivity", server_url);
+        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET,
+                server_url, null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(String response) {
-                        Log.e("TAG", response);
+                    public void onResponse(JSONObject response) {
                         try {
-                            JSONObject jsonObject = new JSONObject(response);
-                            JSONArray jsonArray = jsonObject.getJSONArray("daily");
+                            JSONObject weather = response.getJSONObject("main");
+
+                            temparature = weather.getString("temp");
+                            humidity = weather.getString("humidity");
+                            minTemp1 = weather.getString("temp_min");
+                            maxTemp1 = weather.getString("temp_max");
+                            JSONArray jsonArray = response.getJSONArray("weather");
                             Log.e("TAG", jsonArray.toString());
+                            condition = "few clouds";
                             for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject weather = jsonArray.getJSONObject(i);
-                                String dt = weather.getString("dt");
-                                JSONObject temp = weather.getJSONObject("temp");
-                                temparature = temp.getString("day");
-                                humidity= weather.getString("humidity");
-                                minTemp1=temp.getString("min");
-                                maxTemp1=temp.getString("max");
-                                JSONArray jsonArray1 = weather.getJSONArray("weather");
-                                Log.e("TAG", jsonArray.toString());
-                                condition="few clouds";
-                                for (int a = 0; a < jsonArray1.length(); a++) {
-                                    JSONObject test = jsonArray1.getJSONObject(a);
-                                    condition =  test.getString("description");
-                                    Log.i("TAG>>", test.getString("description"));
-                                }
-
-                                Log.e("TAG", dt + ">>>>" + "Temp" + temparature +
-                                        "Humidity" + humidity
-                                        + "Min Temp" +  minTemp1 +
-                                        "Max Temp " + maxTemp1);
-
-
-
-
-
+                                JSONObject test = jsonArray.getJSONObject(i);
+                                condition = test.getString("description");
+                                Log.i("TAG", test.getString("description"));
                             }
+
+                            mMap.addMarker(new MarkerOptions().position(loc).title("New Marker").icon(getIcon(condition)));
+                            //mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc,
+                                    10));
+                            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                                @Override
+                                public boolean onMarkerClick(Marker marker) {
+                                    Intent intent = new Intent(MapsActivity.this, WeatherPage.class);
+                                    intent.putExtra("latitude", currentLat);
+                                    intent.putExtra("longitude", currentLon);
+                                    intent.putExtra("location", locationAddd);
+                                    startActivity(intent);
+                                    return false;
+                                }
+                            });
+
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Log.i("TAG", "Exception" + e.getMessage() + ">>>>");
                         }
+
                     }
                 }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.i("TAG", "Volley Error" + error.getMessage() + ">>>>");
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+                NetworkResponse response = error.networkResponse;
+                if (error instanceof ServerError && response != null) {
+                    try {
+                    } catch (Exception e1) {
+                        // Couldn't properly decode data to string
+                        Toast.makeText(getApplicationContext(), "An error occured while creating the account. Please try again later", Toast.LENGTH_SHORT).show();
+                        e1.printStackTrace();
                     }
-                });
-                RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-                requestQueue.add(stringRequest);
+                }
             }
+        });
 
-
-    public void getWeatherData(final LatLng loc){
-
-                String server_url  = "http://api.openweathermap.org/data/2.5/weather?lat=" + Double.toString(currentLat) + get_matric_ur()  + "&lon=" +  Double.toString(currentLon)+ "&APPID=ba6f50c8f8128fa2cce45dc13d58ed2c";
-                Log.e("RegisterActivity",server_url);
-                JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET,
-                        server_url,null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    JSONObject weather= response.getJSONObject("main");
-
-                                    temparature = weather.getString("temp");
-                                    humidity= weather.getString("humidity");
-                                    minTemp1=weather.getString("temp_min");
-                                    maxTemp1=weather.getString("temp_max");
-                                    JSONArray jsonArray = response.getJSONArray("weather");
-                                    Log.e("TAG", jsonArray.toString());
-                                    condition="few clouds";
-                                    for (int i = 0; i < jsonArray.length(); i++) {
-                                        JSONObject test = jsonArray.getJSONObject(i);
-                                        condition =  test.getString("description");
-                                        Log.i("TAG", test.getString("description"));
-                                    }
-
-                                    mMap.addMarker(new MarkerOptions().position(loc).title("New Marker").icon(getIcon(condition)));
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
-                                    mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                                        @Override
-                                        public boolean onMarkerClick(Marker marker) {
-                                            Intent intent = new Intent(MapsActivity.this,WeatherPage.class);
-                                            intent.putExtra("latitude",currentLat);
-                                            intent.putExtra("longitude",currentLon);
-                                            startActivity(intent);
-                                            return false;
-                                        }
-                                    });
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        NetworkResponse response = error.networkResponse;
-                        if (error instanceof ServerError && response != null) {
-                            try {
-                            } catch (Exception e1) {
-                                // Couldn't properly decode data to string
-                                Toast.makeText(getApplicationContext(),"An error occured while creating the account. Please try again later",Toast.LENGTH_SHORT).show();
-                                e1.printStackTrace();
-                            }
-                        }
-                    }
-                });
-
-                RequestQueueFactory.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
-            }
+        RequestQueueFactory.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-        if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions( this, new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },
-                    MY_PERMISSION_ACCESS_COARSE_LOCATION );
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                    MY_PERMISSION_ACCESS_COARSE_LOCATION);
         }
 
-        float zoomLevel = 8.0f;
-       @SuppressLint("MissingPermission") Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+        float zoomLevel = 9;
+        @SuppressLint("MissingPermission") Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         if (mLastLocation != null) {
-            Log.d(TAG,mLastLocation.getLatitude() + " , " +mLastLocation.getLongitude());
-         currentLat = mLastLocation.getLatitude();
-         currentLon = mLastLocation.getLongitude();
+            Log.d(TAG, mLastLocation.getLatitude() + " , " + mLastLocation.getLongitude());
+            currentLat = mLastLocation.getLatitude();
+            currentLon = mLastLocation.getLongitude();
             BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.light_rain);
             LatLng currentLocation = new LatLng(currentLat, currentLon);
             getWeatherData(currentLocation);
             mMap.addMarker(new MarkerOptions().position(currentLocation).title("My Location").icon(icon));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,zoomLevel));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoomLevel));
 
 
-
-        }else{
-            Log.d(TAG,"Receiving nul for location");
+        } else {
+            Log.d(TAG, "Receiving nul for location");
+            mLastLocation = LocationServices.FusedLocationApi
+                    .getLastLocation(mGoogleApiClient);
+            // then center on map
+            LatLng mLatLng = new LatLng(-28.4793, 24.6727);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom
+                    (mLatLng, 6), 1000, null);
         }
+
     }
 
     @Override
@@ -441,7 +436,7 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = "+ connectionResult.getErrorCode());
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
     }
 
     @Override
@@ -456,7 +451,7 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
     }
 
     @SuppressLint("SetTextI18n")
-    private View prepareInfoView(Marker marker){
+    private View prepareInfoView(Marker marker) {
         //prepare InfoView programmatically
         LinearLayout infoView = new LinearLayout(MapsActivity.this);
         LinearLayout.LayoutParams infoViewParams = new LinearLayout.LayoutParams(
@@ -466,7 +461,7 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
 
         ImageView infoImageView = new ImageView(MapsActivity.this);
         //Drawable drawable = getResources().getDrawable(R.mipmap.ic_launcher);
-        Drawable drawable = getResources().getDrawable(android.R.drawable.ic_dialog_map);
+        @SuppressLint("UseCompatLoadingForDrawables") Drawable drawable = getResources().getDrawable(android.R.drawable.ic_dialog_map);
         infoImageView.setImageDrawable(drawable);
         infoView.addView(infoImageView);
 
@@ -479,61 +474,92 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
         TextView subInfoLat = new TextView(MapsActivity.this);
         subInfoLat.setText("Temperature : " + temparature + Weather.get_symbol(symbol_status));
         TextView subInfoLnt = new TextView(MapsActivity.this);
-        subInfoLnt.setText("Humidity :  " + humidity +  "%");
+        subInfoLnt.setText("Humidity :  " + humidity + "%");
         TextView minTemp = new TextView(MapsActivity.this);
         minTemp.setText("Min Temp :  " + minTemp1 + Weather.get_symbol(symbol_status));
         TextView maxTemp = new TextView(MapsActivity.this);
         maxTemp.setText("Max Temp :  " + maxTemp1 + Weather.get_symbol(symbol_status));
+        TextView Add = new TextView(MapsActivity.this);
+        Add.setText(locationAddd);
         subInfoView.addView(subInfoLat);
         subInfoView.addView(subInfoLnt);
         subInfoView.addView(minTemp);
         subInfoView.addView(maxTemp);
+        subInfoView.addView(Add);
         infoView.addView(subInfoView);
 
         return infoView;
     }
-            public void searchLocation(View view) {
-                EditText locationSearch = (EditText) findViewById(R.id.searchAdd);
-                String location = locationSearch.getText().toString();
-                List<Address> addressList = null;
 
-                if (location != null || !location.equals("")) {
-                    Geocoder geocoder = new Geocoder(this);
-                    try {
-                        addressList = geocoder.getFromLocationName(location, 1);
+    public void searchLocation(View view) {
+        EditText locationSearch = (EditText) findViewById(R.id.searchAdd);
+        String location = locationSearch.getText().toString();
+        List<Address> addressList = null;
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    Address address = addressList.get(0);
-                    LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+        if (location != null || !location.equals("")) {
+            Geocoder geocoder = new Geocoder(this);
+            try {
+                addressList = geocoder.getFromLocationName(location, 1);
 
-                    currentLat = address.getLatitude();
-                    currentLon = address.getLongitude();
-                    reverse_GeoCoder();
-                    getWeatherData(latLng);
-                    //getForecast();
-                    getDaily();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Address address = addressList.get(0);
+            LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
+            currentLat = address.getLatitude();
+            currentLon = address.getLongitude();
+            reverse_GeoCoder();
+            getWeatherData(latLng);
+            //getForecast();
+            getDaily();
+
+        }
+    }
+
+
+    @Override
+    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+
+    }
+
+    @Override
+    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+    }
+
+    @Override
+    public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+    }
+
+    private void centerMapOnMyLocation() {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
+
+                Location location = mMap.getMyLocation();
+                LatLng myLocation =null;
+                if (location != null) {
+                    myLocation = new LatLng(location.getLatitude(),
+                            location.getLongitude());
+
+                }else{
+                    myLocation = new LatLng(-28.4792625,24.6727135);
                 }
-            }
-
-
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation,
+                10));
 
             }
-
-            @Override
-            public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-            }
-
-            @Override
-            public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-            }
-
             public void reverse_GeoCoder(){
                 Geocoder gc = new Geocoder(getApplicationContext());
                 if(gc.isPresent()){
@@ -544,14 +570,12 @@ public class MapsActivity extends FragmentActivity implements Target, OnMapReady
                         e.printStackTrace();
                     }
                     Address address = list.get(0);
-                    StringBuffer str = new StringBuffer();
-                    str.append("Name: " + address.getLocality() + "\n");
-                    str.append("Sub-Admin Ares: " + address.getSubAdminArea() + "\n");
-                    str.append("Admin Area: " + address.getAdminArea() + "\n");
-                    str.append("Country: " + address.getCountryName() + "\n");
-                    str.append("Country Code: " + address.getCountryCode() + "\n");
-                    String strAddress = str.toString();
-                    Log.i("CON", strAddress);
+                    locationAddd  = "Name: " + address.getLocality() + ", " +
+                            "Sub-Admin Ares: " + address.getSubAdminArea() + ", " +
+                            "Admin Area: " + address.getAdminArea() + ", " +
+                            "Country: " + address.getCountryName() + ", " +
+                            "Country Code: " + address.getCountryCode() + ", ";
+                    Log.i("CON",  locationAddd);
                 }
             }
         }

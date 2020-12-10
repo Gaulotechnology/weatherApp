@@ -45,7 +45,7 @@ public class WeatherPage extends AppCompatActivity {
     private RecyclerView recyclerView;
     private String humidity, temparature, maxTemp, minTemp;
     private double currentLat=0.0, currentLon=0.0;
-    private String condition;
+    private String condition, locationAdd;
     private SharedPreferences prefs;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +54,7 @@ public class WeatherPage extends AppCompatActivity {
         Intent intent = getIntent();
         currentLat = intent.getDoubleExtra("latitude",0);
         currentLon = intent.getDoubleExtra("longitude",0);
+        locationAdd = intent.getStringExtra("location");
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         getDaily();
         // Inflate the layout for this fragment
@@ -116,7 +117,7 @@ public class WeatherPage extends AppCompatActivity {
                             Log.i("TAG>>", test.getString("description"));
                         }
 
-                        weatherList.add(new Weather(dt,humidity,minTemp, maxTemp,temparature, condition));
+                        weatherList.add(new Weather(dt,humidity,minTemp, maxTemp,temparature, condition, locationAdd));
 
                         Log.e("TAG", dt + ">>>>" + "Temp" + temparature +
                                 "Humidity" + humidity

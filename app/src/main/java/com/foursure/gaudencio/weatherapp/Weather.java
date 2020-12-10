@@ -11,6 +11,7 @@ public class Weather {
     String maxTemp;
     String temperature;
     String description;
+    String location;
 
     public static String get_symbol(int choice){
         if(choice==1 ){
@@ -22,7 +23,15 @@ public class Weather {
     }
 
 
-
+    public Weather(int date, String humidity, String minTemp, String maxTemp, String temperature, String description, String location) {
+        this.date = date;
+        this.humidity = humidity;
+        this.minTemp = minTemp;
+        this.maxTemp = maxTemp;
+        this.temperature = temperature;
+        this.description = description;
+        this.location = location;
+    }
 
     public Weather(int date, String humidity, String minTemp, String maxTemp, String temperature, String description) {
         this.date = date;
@@ -88,4 +97,13 @@ public class Weather {
     public void setTemperature(String temperature) {
         this.temperature = temperature;
     }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+    public String getLocation() {
+        return location;
+    }
+
+
 }
